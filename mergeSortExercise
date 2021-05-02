@@ -1,0 +1,161 @@
+/**
+ * @author    Nathan Garrett
+ * @date      03/09/2020
+ * 
+ * 
+ * Summary: Make a program that will ask a user for a file to read (pre made), 
+ *  then scan each line of the file, parsing all the values inside to doubles.
+ *  It will then display the values as written from the file.
+ *  The program will then take that values scanned and sort them from lowest to
+ *  highest, and display them on screen for the user to read.
+ * 
+ * Algorithm
+ * 
+ *  1. Display on screen intro
+ * 
+ *  2. Prompt user for file name.
+ *     - If user enters invalid file name, no input at all, or the file doesn't
+ *       exist, call a loop that prompts the user again for a valid entry.
+ *  3. Method: ReadnParse
+ *     - If the file name is valid, the method will be called for conversion
+ *     - 1. Open the file and scan each line, then display the
+ *          contents.
+ *          - If the values cannot be parsed, an error message will occur and 
+ *            prompt the user to clean up their file and start again.
+ *     - 2. Create an ArrayList for storing values of Double type.Open file and 
+ *          scan each line, this time parsing all the values to a double value 
+ *          and adding them to the ArrayList.
+ *     - 3. Copy the values from the ArrayList to Double array to prepare for
+ *          sorting
+ *     - 4. Call a method for mergeSort algorithm inside the printArray call.
+ *  4. Method: printArray
+ *     - Prints the sorted array to the screen
+ *  5. Method: mergeSort
+ *     - Breaks down the array into the smallest parts and then calls the merge
+ *       method
+ *  6. Method: merge
+ *     - This method takes the values in either a 2 element or one element array
+ *       and copies them to a helper array
+ *     - then it checks to see if the first value is higher than the second 
+ *       value.
+ *     - If it is, then it swaps the values, and sends back the sorted sub array
+ */
+
+
+
+package mergesortwrapperstuff;
+
+import java.util.*;                                                             //Imports for various utilities.
+import java.io.*;
+
+
+public class MergeSortWrapperStuff {
+
+
+    public static void main(String[] args) {
+        
+        Scanner keyboard = new Scanner(System.in);
+        String input;                                                           //Making a keyboard scanner and capturing the input to a string
+        
+        
+        System.out.println("Welcome to the program that sorts numbers from a"
+                + " file...2000!!!");                                           //Intro
+        
+        int x = 1;
+        do{                                                                     // This is a do while loop that asks the user for a file to open.
+      
+            try{
+                System.out.print("Please enter file name: ");
+                input = keyboard.nextLine();
+                File file = new File(input);
+                x = 2;                                                                  //If the file is found, the try succeeds and ends the loop with x = 2 to break.
+                fileReadnParse(input);                                                  //This calls the method that will read and parse each line of the file into double values.                                
+        }
+        catch(Exception e){
+            System.out.println("File not found, try again.");                   //If the file is not found, or if the user puts in nothing at all, an error will occur and
+        }                                                                       //loop back so the user can try again. 
+        }while(x == 1); 
+    }
+    
+        public static void fileReadnParse(String input){                        //The valid file name input is sent here for reading
+            Scanner scan;                                                       //Scanner initiation for reading the file.
+            try{
+                File file = new File(input);
+                scan = new Scanner(file);                                       //Opens the file with the validated name
+                System.out.print("Your file contains the following numbers,\n"
+                                 + "in the following order:\n");                //Display that outputs the contents to the user's screen.
+                while(scan.hasNextLine()){
+                    System.out.print(scan.nextLine() + "   ");
+                }
+                System.out.println("\n\n");                                     //Gives a little space for the output display.
+                scan.close();                                                   //Close file.
+                                                                                                                          
+                scan = new Scanner(file);                                       //Open the file again.
+                ArrayList<Double> numList = new ArrayList<Double>(1);           //Create an ArrayList to hold values.  I gave it a value of 1, but it can change depending on the file.
+                while(scan.hasNextLine()){  
+                    double num = scan.nextDouble();                             //This loop scans each line, parses it to a double value, then adds it to the array list.
+                    numList.add(num);
+                }
+                scan.close();                                                   //Close file.
+                double[] array = new double[numList.size()];                    //This creates a double array with the same size as the array list.
+                for(int i = 0; i < numList.size(); i ++){
+                    array[i] = numList.get(i);                                  //This loop copies the values of each element in the ArrayList to the double array
+                }
+                int arraySize = array.length;                                   //Capture the size of the array as an int.
+                printArray(mergeSort(array, arraySize));                        //This call calls the merge sort algorithm, and afer it's all done and the sorted array is returned, it prints out the display
+            }catch(Exception e){                                                //This catch sees if any values that were scanned from the file could not be parsed into a double value.
+                System.out.println("Error, one or more values are not numbers." //If not, it requests that the user clean up their file and run the program again.
+                                   + "  Modify the file and run program again.");
+            }   
+        }
+        
+        public static void printArray(double[] array){                          //This method marks the end of the program as it displays the sorted array to the user and ends.                     
+            
+        System.out.println("Here are the numbers you have in your file, "       
+                        + "sorted from lowest to highest.: \n");    
+            for(double i : array){                                              //loop to print out the sorted array, element by element.        
+                System.out.print(i + "\n");
+            }
+            System.exit(0);                                                     //Closes the program.
+        }
+        
+        public static double[] mergeSort(double[] array, int size){             //This is the method that breaks down the array into smaller element arrays, then sends them to the sorting method.
+            
+            if(size < 2){                                                       //returns the original array if it's 1 or smaller.
+                return array;
+            }
+            int low = 0;
+            int mid = size /2;                                                  //Find the middle for splitting
+            double[] firstHalf = Arrays.copyOfRange(array, low, mid);           //Split the first half and copy.  I found a neat command to do this (copyOfRange).
+            firstHalf = mergeSort(firstHalf, mid);                              //Split further
+            double[] secondHalf = Arrays.copyOfRange(array, mid, size);         //Same with the second half
+            secondHalf = mergeSort(secondHalf, size - mid);                     //Split second further
+            array = merge(firstHalf, secondHalf, mid, size - mid);              //Sends all the broken down arrays to get sorted and merged back together.
+        
+            return array;                                                       //Sends the merged array back up to be printed and displayed
+        }
+        
+        public static double[] merge(double[] first, double[] second, int a, int b){//this method sorts all the broken down arrays.
+        
+            double[] helper = new double[a + b];                                //Inititalizing a helper array for swapping and copying
+        
+            int low = 0;                                                        //helper ints for sorting
+            int med = 0;
+            int high = 0;
+        
+            while(med < a && high < b){                                         //Basically, if the first element is bigger than the second, the values get swapped.
+                if( first[med] < second[high])                                  //If not then they get straight copied to the helper array and returned
+                    helper[low++] = first[med++];                               //After one set is organized, it increments and works on the next one, etc, until there are no more left.
+                else
+                    helper[low++] = second[high++];
+                }
+            while(med < a)                                                      
+                helper[low++] = first[med++];
+            while(high < b)
+                helper[low++] = second[high++];
+            return helper;                                                      //returns the helper array, which is the sorted one.
+        }
+}
+    
+    
+
